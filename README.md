@@ -1,14 +1,13 @@
 <a id="readme-top"></a>
+
 <h3 align="center">Touch Detector</h3>
+<p align="center"> Capture touch coordinates with floating widget </p>
 
 <!-- TECH STACK -->
 ## Tech Stack
 [![Android][Android-Shield]][Android-Url]
-
 [![Gradle][Gradle-Shield]][Gradle-Url]
-
 [![Java][Java-Shield]][Java-Url]
-
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- LICENSE -->
