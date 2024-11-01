@@ -1,24 +1,25 @@
-<a id="readme-top"></a>
-
 <h3 align="center">Touch Detector</h3>
 <p align="center"> Capture touch coordinates with floating widget </p>
+
+<!-- DESCRIPTION -->
+## Description
+- Visualizing the touch coordinates for use in automations
+- Using service classes for the floating widget
+- Linking touch input with coordinate system and display
 
 <!-- TECH STACK -->
 ## Tech Stack
 [![Android][Android-Shield]][Android-Url]
 [![Gradle][Gradle-Shield]][Gradle-Url]
 [![Java][Java-Shield]][Java-Url]
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- LICENSE -->
 ## License
 [![License][License-Shield]][License-Url]
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- VERSION -->
 ## App Version
 ![Version][Version-Shield]
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
