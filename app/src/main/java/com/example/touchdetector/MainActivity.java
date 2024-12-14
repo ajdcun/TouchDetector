@@ -66,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
+        super.onBackPressed();
         long currentTime = System.currentTimeMillis();
 
         if (currentTime - backPressTime < DOUBLE_BACK_PRESS_INTERVAL) {
