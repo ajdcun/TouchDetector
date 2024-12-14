@@ -1,12 +1,16 @@
 package com.example.touchdetector;
 
-import android.app.Instrumentation;
+import static android.content.ContentValues.TAG;
+import android.annotation.SuppressLint;
+
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -16,7 +20,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
-
 
 public class FloatingWidgetService extends Service {
     DisplayMetrics displayMetrics;
@@ -30,17 +33,14 @@ public class FloatingWidgetService extends Service {
 
     int screenWidth = 0;
     int screenHeight = 0;
-    int statusBarHeight = 0;
-    int navigationBarHeight = 0;
     int crossFadeRadius = 0;
     int verticalWidth = 0;
     int horizontalHeight = 0;
 
+    private final int CLICK_ACTION_THRESHOLD = 200;
     private long lastTouchTime = 0;
-    private int CLICK_ACTION_THRESHOLD = 200;
-    private int screenX;
-    private int screenY;
 
+    @SuppressLint("InflateParams")
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         windowManager = (WindowManager)getSystemService(WINDOW_SERVICE);
@@ -87,12 +87,12 @@ public class FloatingWidgetService extends Service {
         crossFadeImageView = floatingView.findViewById(R.id.Image_Crossfade);
         windowManager.addView(floatingView, floatingParams);
 
-        int action = MotionEvent.ACTION_DOWN; // Aktion, z.B. ACTION_DOWN für Drücken
+        int action = MotionEvent.ACTION_DOWN;
         long downTime = SystemClock.uptimeMillis();
         long eventTime = SystemClock.uptimeMillis();
-        float x = 100; // X-Koordinate des Berührpunkts
-        float y = 200; // Y-Koordinate des Berührpunkts
-        int metaState = 0; // Metazustand, normalerweise 0
+        float x = 100;
+        float y = 200;
+        int metaState = 0;
         MotionEvent motionEvent = MotionEvent.obtain(
                 downTime,
                 eventTime,
@@ -123,14 +123,14 @@ public class FloatingWidgetService extends Service {
         floatingView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                int touchX = (int)event.getRawX();;
-                int touchY = (int)event.getRawY();;
+                int touchX = (int)event.getRawX();
+                int touchY = (int)event.getRawY();
 
                 drawFloatingWidget(touchX, touchY);
 
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_UP:
-                        destroyOnDoubleTab();
+                        destroyOnDoubleTab(CLICK_ACTION_THRESHOLD);
                         return true;
                 }
 
@@ -146,6 +146,7 @@ public class FloatingWidgetService extends Service {
     public void onDestroy() {
         super.onDestroy();
         destroyFloatingWidget();
+        returnToMain();
     }
 
     @Nullable
@@ -154,10 +155,11 @@ public class FloatingWidgetService extends Service {
         return null;
     }
 
-    private void destroyOnDoubleTab() {
+    private void destroyOnDoubleTab(int threshold) {
         long touchTime = System.currentTimeMillis();
-        if (touchTime - lastTouchTime < CLICK_ACTION_THRESHOLD) {
+        if (touchTime - lastTouchTime < threshold) {
             destroyFloatingWidget();
+            returnToMain();
             lastTouchTime = 0;
         } else {
             lastTouchTime = touchTime;
@@ -184,54 +186,54 @@ public class FloatingWidgetService extends Service {
 
     private void drawFloatingWidget(int touchX, int touchY){
         int navigationBarHeight = 0;
-        int resourceIdNavigationBar = getResources().getIdentifier("navigation_bar_height", "dimen", "android");
+        @SuppressLint("InternalInsetResource") int resourceIdNavigationBar = getResources().getIdentifier("navigation_bar_height", "dimen", "android");
         if (resourceIdNavigationBar > 0) {
             navigationBarHeight = getResources().getDimensionPixelSize(resourceIdNavigationBar);
         }
 
         int statusBarHeight = 0;
-        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        @SuppressLint({"DiscouragedApi", "InternalInsetResource"}) int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
         if (resourceId > 0) {
             statusBarHeight = getResources().getDimensionPixelSize(resourceId);
         }
 
-        screenX = touchX;
-        screenY = touchY - statusBarHeight;
+        if (checkFloatingWidgetAlive()) {
+            int screenY = touchY - statusBarHeight;
 
-        floatingParams.x = screenX - crossFadeRadius;
-        floatingParams.y = screenY - crossFadeRadius;
-        windowManager.updateViewLayout(floatingView, floatingParams);
+            floatingParams.x = touchX - crossFadeRadius;
+            floatingParams.y = screenY - crossFadeRadius;
+            windowManager.updateViewLayout(floatingView, floatingParams);
 
-        verticalParams.x = screenX;
-        horizontalParams.y = screenY;
-        windowManager.updateViewLayout(verticalView, verticalParams);
-        windowManager.updateViewLayout(horizontalView, horizontalParams);
+            verticalParams.x = touchX;
+            horizontalParams.y = screenY;
+            windowManager.updateViewLayout(verticalView, verticalParams);
+            windowManager.updateViewLayout(horizontalView, horizontalParams);
 
-        coordinatesParams.x = screenX;
-        coordinatesParams.y = screenY;
-        coordinatesLinearLayout.measure(0, 0);
+            coordinatesParams.x = touchX;
+            coordinatesParams.y = screenY;
+            coordinatesLinearLayout.measure(0, 0);
 
-        int textViewWidth = coordinatesLinearLayout.getMeasuredWidth();
-        int textViewHeight = coordinatesLinearLayout.getMeasuredHeight();
-        if(touchX - screenWidth/2 >= 0){
-            coordinatesParams.x = screenX - textViewWidth;
+            int textViewWidth = coordinatesLinearLayout.getMeasuredWidth();
+            int textViewHeight = coordinatesLinearLayout.getMeasuredHeight();
+            if (touchX - screenWidth / 2 >= 0) {
+                coordinatesParams.x = touchX - textViewWidth;
+            }
+            if (touchY - screenHeight / 2 >= 0) {
+                coordinatesParams.y = screenY - textViewHeight;
+            }
+            windowManager.updateViewLayout(coordinatesView, coordinatesParams);
+
+            int touchPercentX = 100 * touchX / screenWidth;
+            int touchPercentY = 100 * touchY / screenHeight;
+            coordinatesXTextView.setText(String.format(
+                    "X: " + touchX + " / " + screenWidth + "px" + " = " + touchPercentX + "%%"));
+            coordinatesYTextView.setText(String.format(
+                    "Y: " + touchY + " / " + screenHeight + "px" + " = " + touchPercentY + "%%"));
         }
-        if(touchY - screenHeight/2 >= 0){
-            coordinatesParams.y = screenY - textViewHeight;
-        }
-        windowManager.updateViewLayout(coordinatesView, coordinatesParams);
-
-        int touchPercentX = 100*touchX/screenWidth;
-        int touchPercentY = 100*touchY/screenHeight;
-        coordinatesXTextView.setText(String.format(
-                "X: " + touchX + " / " + screenWidth + "px" + " = " + touchPercentX + "%%"));
-        coordinatesYTextView.setText(String.format(
-                "Y: " + touchY + " / " + screenHeight + "px" + " = " + touchPercentY + "%%"));
-        return;
     }
 
     private void destroyFloatingWidget() {
-        if (windowManager != null && coordinatesView != null && horizontalView != null && verticalView != null && floatingView != null){
+        if (checkFloatingWidgetAlive()){
             sendDataToDataTransferService(coordinatesXTextView.getText().toString(), coordinatesYTextView.getText().toString());
 
             windowManager.removeView(coordinatesView);
@@ -243,15 +245,36 @@ public class FloatingWidgetService extends Service {
             horizontalView = null;
             verticalView = null;
             floatingView = null;
+        }
+    }
 
-            Intent resultIntent = new Intent(getApplicationContext(), ResultActivity.class);
-            resultIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(resultIntent);
+    public void returnToMain() {
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this,
+                0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        try {
+            pendingIntent.send();
+        } catch (PendingIntent.CanceledException e) {
+            Log.e(TAG, e.toString());
         }
     }
 
     private void sendDataToDataTransferService(String xData, String yData) {
         DataTransferService.getInstance().setCoordinatesData(xData, yData);
+    }
+
+    private boolean checkFloatingWidgetAlive() {
+        if (windowManager != null &&
+                coordinatesView != null &&
+                horizontalView != null &&
+                verticalView != null &&
+                floatingView != null) {
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
 }

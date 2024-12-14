@@ -1,10 +1,5 @@
 package com.example.touchdetector;
 
-import static androidx.core.content.ContextCompat.startActivity;
-
-import android.content.Intent;
-import android.view.View;
-
 public class DataTransferService {
     private static DataTransferService instance;
     private String coordinatesXData;
