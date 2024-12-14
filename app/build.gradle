@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace 'com.example.touchdetector'
+    namespace 'com.camaysoft.touchdetector'
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.example.touchdetector"
+        applicationId "com.camaysoft.touchdetector"
         minSdk 26
         targetSdk 34
         versionCode 1
@@ -22,8 +22,9 @@ android {
             buildConfigField "String", "ADMOB_BANNER_AD_UNIT_ID", "\"ca-app-pub-3940256099942544/6300978111\"" // Test Banner ID
         }
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
             manifestPlaceholders = [ADMOB_APP_ID: "ca-app-pub-xxxxxxxxxxxxxxxx~yyyyyyyyyy"]  // Real App ID
             buildConfigField "String", "ADMOB_BANNER_AD_UNIT_ID", "\"ca-app-pub-xxxxxxxxxxxxxxxx/xxxxxxxxxx\""  // Real Banner-ID
         }

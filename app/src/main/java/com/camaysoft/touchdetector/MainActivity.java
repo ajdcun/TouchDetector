@@ -1,4 +1,4 @@
-package com.example.touchdetector;
+package com.camaysoft.touchdetector;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -13,10 +13,10 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -24,25 +24,22 @@ public class MainActivity extends AppCompatActivity {
     private static final long DOUBLE_BACK_PRESS_INTERVAL = 2000;
     private static long backPressTime;
 
-    private Button button;
-    private AdView adView;
-    private LinearLayout linearLayout;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        button = findViewById(R.id.Button_Start_Widget);
+        Button button = findViewById(R.id.Button_Start_Widget);
         button.setOnClickListener(view -> StartFloatingWidgetService());
 
-        adView = new AdView(MainActivity.this);
-        linearLayout = findViewById(R.id.layout_banner);
+        AdView adView = new AdView(MainActivity.this);
+        LinearLayout linearLayout = findViewById(R.id.layout_banner);
 
         new Thread(
                 () -> {
                     // Initialize the Google Mobile Ads SDK on a background thread.
-                    MobileAds.initialize(this, initializationStatus -> {});
+                    MobileAds.initialize(this, initializationStatus -> {
+                    });
                 })
                 .start();
 
@@ -85,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
         String xData = DataTransferService.getInstance().getCoordinatesXData();
         String yData = DataTransferService.getInstance().getCoordinatesYData();
 
-        if (xData != null && yData != null){
+        if (xData != null && yData != null) {
             TextView coordinatesXTextView = findViewById(R.id.Text_CoordinatesX);
             coordinatesXTextView.setText(xData);
 
@@ -116,12 +113,11 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(PermissionIntent, SYSTEM_ALERT_WINDOW_PERMISSION);
     }
 
-    private void StartFloatingWidgetService(){
+    private void StartFloatingWidgetService() {
         if (Settings.canDrawOverlays(MainActivity.this)) {
             startService(new Intent(MainActivity.this, FloatingWidgetService.class));
             finish();
-        }
-        else {
+        } else {
             RuntimePermissionForUser();
             Toast.makeText(this,
                             "System Alert Window Permission Is Required For Floating Widget.",

@@ -1,4 +1,4 @@
-package com.example.touchdetector;
+package com.camaysoft.touchdetector;
 
 public class DataTransferService {
     private static DataTransferService instance;
